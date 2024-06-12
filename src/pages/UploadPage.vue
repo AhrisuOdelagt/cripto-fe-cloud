@@ -1,27 +1,7 @@
 <template>
   <v-container class="create-key-container">
     <v-form @submit.prevent="validateFragment">
-      <div class="create-key_text">Descargar</div>
-
-      <div class="download-validate_container">
-        <div>
-          <div>Oscar Romero</div>
-          <div :class="validateBoxClass"></div>
-        </div>
-        <div>
-          <div>Diego Olmos</div>
-          <div :class="validateBoxClass"></div>
-        </div>
-        <div>
-          <div>Demian Oder</div>
-          <div :class="validateBoxClass"></div>
-        </div>
-      </div>
-
-      <div class="download-keys_buttons">
-        <v-btn>Descargar Key</v-btn>
-        <v-btn>Subir Key</v-btn>
-      </div>
+      <div class="create-key_text">Subir Archivo</div>
 
       <div class="create-key-container__buttons">
 
@@ -40,15 +20,7 @@
           <div>{{ itemSelected }}</div>
         </div>
 
-        <v-btn @click="upload" color="primary">Subir Archivo</v-btn>
-        <v-btn
-          @click="generateMasterKey"
-          :color="generateKeyButtonColor"
-          :style="{ cursor: generateKeyCursorStyle }"
-          :disabled="generateKeyButtonColor !== 'secondary'">
-          Descargar
-        </v-btn>
-        <v-btn @click="validateFragment" color="orange">Validar Fragmento</v-btn>
+        <v-btn color="primary">Subir Archivo</v-btn>
         <v-btn @click="cancel" color="red">Cancelar</v-btn>
       </div>
     </v-form>
@@ -57,7 +29,7 @@
 
 <script>
 export default {
-  name: "DownloadPage",
+  name: "UploadPage",
   data() {
     return {
       user: '',
@@ -74,20 +46,14 @@ export default {
     };
   },
   methods: {
-    upload() {
-      this.$router.push({name: 'subir'});
-    },
     validateFragment() {
       this.isAddUserVisible = true;
       this.generateKeyButtonColor = 'secondary';
       this.generateKeyCursorStyle = 'pointer';
       this.validateBoxClass = 'download-validate_box_correct';
     },
-    generateMasterKey() {
-      this.$router.push({name: 'descargar'});
-    },
     cancel() {
-      this.$router.push({name: 'seleccionar-equipo'});
+      this.$router.push({name: 'descargar'});
     }
   }
 }

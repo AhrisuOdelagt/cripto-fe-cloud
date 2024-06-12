@@ -6,6 +6,7 @@ import SelectionTeamPage from '@/pages/SelectionTeamPage.vue'
 import CreateTeamPage from "@/pages/CreateTeamPage.vue";
 import CreateMasterKeyPage from "@/pages/CreateMasterKeyPage.vue";
 import DownloadPage from "@/pages/DownloadPage.vue";
+import UploadPage from "@/pages/UploadPage.vue";
 
 
 const router = createRouter({
@@ -42,6 +43,11 @@ const router = createRouter({
       path: '/descargar',
       name: 'descargar',
       component: DownloadPage
+    },
+    {
+      path: '/subir',
+      name: 'subir',
+      component: UploadPage
     },
   ]
 })
