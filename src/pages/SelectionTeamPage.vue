@@ -2,9 +2,11 @@
   <v-container class="team_container">
     <div class="team_text">Tus Equipos</div>
     <div class="team_cards">
-      <CardTeam team-number="1" team-name="Fisica" @click="team"></CardTeam>
-      <CardTeam team-number="2" team-name="Matematicas"></CardTeam>
-      <CardTeam team-number="3" team-name="Quimica"></CardTeam>
+      <CardTeam v-for="(team, index) in teams" :key="index"
+                :team-desc="team.team_desc"
+                :team-name="team.team_name"
+                @click="redirectTeam(team.team_desc, team.team_name)">
+      </CardTeam>
     </div>
     <div class="team-container__buttons">
       <v-btn @click="createTeam" color="primary">Crear Equipo</v-btn>
@@ -15,20 +17,45 @@
 
 <script>
 import CardTeam from "@/components/CardTeam.vue";
+import localforage from "localforage";
+import axios from "axios";
 
 export default {
   name: "SelectionTeamPage",
   components: { CardTeam },
+
+  data() {
+    return {
+      teams: [],
+    };
+  },
+  props: ['user'],
+  async mounted() {
+    const response = await this.getTeams();
+    this.teams = response.data;
+  },
+
   methods: {
     createTeam() {
       this.$router.push({ name: 'crear-equipo' });
     },
-    closeSesion() {
-      this.$router.push({ name: 'iniciar-sesion' });
+    async closeSesion() {
+      await localforage.removeItem('authToken');
+      this.$router.push({name: 'iniciar-sesion'});
     },
-    team() {
-      this.$router.push({ name: 'team', params: { teamNumber: "1", teamName: "Fisica" } });
-    }
+    redirectTeam(teamDesc, teamName) {
+      this.$router.push({ name: 'team', params: { teamName: teamName, user: this.user } });
+    },
+    async getTeams() {
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${await localforage.getItem('authToken')}`,
+        },
+      };
+
+      return await axios.get('http://localhost:5000/equipos/listar', config);
+    },
   }
 }
 </script>

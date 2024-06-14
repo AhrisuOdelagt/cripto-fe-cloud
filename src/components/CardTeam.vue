@@ -1,7 +1,7 @@
 <template>
   <div class="card-team_container">
-    <div>Equipo #{{ teamNumber }}</div>
-    <div>{{ teamName }}</div>
+    <div>"{{ teamName }}"</div>
+    <div>{{ teamDesc }}</div>
   </div>
 </template>
 
@@ -9,9 +9,9 @@
 export default {
   name: "CardTeam",
   props: {
-    teamNumber: {
-      type: Number,
-      default: 0,
+    teamDesc: {
+      type: String,
+      default: "",
       required: true
     },
     teamName: {
@@ -26,7 +26,7 @@ export default {
 <style scoped lang="scss">
 .card-team_container {
   cursor: pointer;
-  padding: 20%;
+  padding: 15%;
   color: white;
   background-color: orangered;
   display: flex;

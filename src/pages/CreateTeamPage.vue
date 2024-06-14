@@ -6,6 +6,8 @@
       <v-text-field v-model="description" label="Description del equipo"></v-text-field>
       <v-text-field v-model="password" label="Contraseña del equipo" type="password"></v-text-field>
 
+      <v-alert v-show="isAlertVisible" :type="messageAlertType" dismissible>{{ messageAlertText }}</v-alert>
+
       <div class="create-team-container__buttons">
         <v-btn @click="createTeam" color="primary">Crear</v-btn>
         <v-btn @click="cancel" color="red">Cancelar</v-btn>
@@ -15,22 +17,62 @@
 </template>
 
 <script>
+import axios from "axios";
+import localforage from "localforage";
+
 export default {
   data() {
     return {
       name: '',
       description: '',
-      password: ''
+      password: '',
+      isAlertVisible: false,
+      messageAlertText: "",
+      messageAlertType: "error",
     };
   },
+  props: ['user'],
   methods: {
-    createTeam() {
-      console.log('Creando equipo...', this.name, this.description, this.password);
-      this.$router.push({ name: 'seleccionar-equipo' });
+    async createTeam() {
+      try {
+        const response = await this.crateTeamPost();
+        console.log('Equipo creado:', response.data);
+        this.$router.push({name: 'seleccionar-equipo'});
+      } catch (error) {
+        if (error.response.status === 400) {
+          this.messageAlertType = "warning";
+          this.messageAlertText = error.response.data.error;
+        }
+        else {
+          console.log(error.response.status)
+          this.messageAlertType = "error";
+          this.messageAlertText = "Ocurrió un error inesperado. Por favor, inténtelo de nuevo.";
+        }
+      } finally {
+        this.isAlertVisible = true;
+      }
     },
     cancel() {
-      this.$router.push({ name: 'seleccionar-equipo' });
-    }
+      this.$router.push({ name: 'seleccionar-equipo', params: { user: this.user }});
+    },
+    async crateTeamPost() {
+      const data = {
+        team_name: this.name,
+        team_desc: this.description,
+        team_pw: this.password,
+        members: [],
+        has_key: false,
+      };
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${await localforage.getItem('authToken')}`,
+        },
+      };
+
+      return await axios.post('http://localhost:5000/equipos/crear', data, config);
+
+    },
   }
 };
 </script>
