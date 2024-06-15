@@ -158,21 +158,26 @@ export default {
       this.uploadFile(file);
     },
     async uploadFile(file) {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      try {
-        const response = await axios.post(`http://localhost:5000/subir_fragmentos/${this.teamName}`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${await localforage.getItem('authToken')}`
-          }
-        });
-
-        console.log('File uploaded successfully:', response.data);
-      } catch (error) {
-        console.error('Error uploading file:', error);
-      }
+      const reader = new FileReader();
+      reader.readAsText(file);
+      reader.onload = async () => {
+        const fileContent = reader.result;
+        try {
+          const response = await axios.post(
+            `http://localhost:5000/equipos/subir_fragmentos/${this.teamName}`,
+            { content: fileContent }, // Enviar solo el contenido
+            {
+              headers: {
+                Authorization: `Bearer ${await localforage.getItem('authToken')}`,
+              },
+            }
+          );
+          console.log('File uploaded successfully:', response.data);
+          this.updateStatusFragment();
+        } catch (error) {
+          console.error('Error uploading file:', error);
+        }
+      };
     }
   }
 }
