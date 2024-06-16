@@ -1,7 +1,7 @@
 <template>
   <v-container class="create-key-container">
     <v-form @submit.prevent="validateFragment">
-      <div class="create-key_text">Descargar | {{teamName}}</div>
+      <div class="create-key_text">Cuenta | {{user}}</div>
 
       <div class="download-validate_container">
         <div v-for="(member, index) in members" :key="index">
@@ -11,46 +11,38 @@
       </div>
 
       <div class="download-keys_buttons">
-        <v-btn @click="downloadFragment">Descargar Fragmento</v-btn>
-        <v-menu open-on-hover>
-          <template v-slot:activator="{ props }">
-            <v-btn v-bind="props">Subir Fragmento</v-btn>
-          </template>
-          <v-list>
-            <v-list-item @click="selectFile">
-              <v-list-item-title>Archivo .pem</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
+        <v-btn @click="downloadFragment" :disabled="isBtnFragmentDownloadDisable">Descargar Fragmento</v-btn>
+        <v-btn @click="selectFile" :disabled="isBtnFragmentUploadDisable">Subir Fragmento</v-btn>
+      </div>
+      <div class="download-keys_buttons_act">
+        <v-btn @click="updateStatusFragment" color="orange">Actualizar</v-btn>
       </div>
 
       <v-alert v-show="isAlertVisible" :type="messageAlertType" dismissible>{{ messageAlertText }}</v-alert>
 
+      <hr class="hr_css">
+
+      <div class="radioCSS">
+        <label v-for="file in this.files.filenames" :key="file">
+          <input type="radio" v-model="opcionSeleccionada" :value="file" >
+          {{ file }}
+        </label>
+      </div>
+
       <div class="create-key-container__buttons">
-        <div class="text-center">
-          <v-menu open-on-hover >
-            <template v-slot:activator="{ props }">
-              <v-btn color="secondary" v-bind="props"> Seleccione un archivo </v-btn>
-            </template>
-
-            <v-list>
-              <v-list-item v-for="(item, index) in items" :key="index" >
-                <v-list-item-title>{{  itemSelected = item.title }}</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-          <div>{{ itemSelected }}</div>
-        </div>
-
-        <v-btn @click="upload" color="primary">Subir Archivo</v-btn>
         <v-btn
-          @click="generateMasterKey"
-          :color="generateKeyButtonColor"
-          :style="{ cursor: generateKeyCursorStyle }"
-          :disabled="generateKeyButtonColor !== 'secondary'">
-          Descargar
+          @click="downloadFile"
+          color="primary"
+          :disabled="this.fragments.length !== this.members.length">
+          Descargar Archivo
         </v-btn>
-        <v-btn @click="updateStatusFragment" color="orange">Actualizar</v-btn>
+        <v-btn @click="selectAnyFile" color="secondary" :disabled="isBtnFragmentDownloadDisable">Subir Archivo</v-btn>
+
+      </div>
+
+      <hr class="hr_css">
+
+      <div class="create-key-container__buttons">
         <v-btn @click="cancel" color="red">Cancelar</v-btn>
       </div>
     </v-form>
@@ -69,6 +61,8 @@ export default {
       generateKeyCursorStyle: 'default',
       validateBoxClass: 'download-validate_box',
       isAlertVisible: false,
+      isBtnFragmentDownloadDisable: false,
+      isBtnFragmentUploadDisable: true,
       messageAlertText: "",
       messageAlertType: "error",
       items: [
@@ -80,11 +74,14 @@ export default {
       itemSelected: "Seleccione un Archivo",
       members: [],
       fragments: [],
+      files: [],
+      opcionSeleccionada: ""
     };
   },
   props: ['teamName', 'user'],
   mounted() {
     this.getMembers();
+    this.getFiles();
   },
   methods: {
     upload() {
@@ -117,6 +114,23 @@ export default {
       for (let member of response.data.fragments) {
         this.fragments.push(member.username)
       }
+
+      if (this.fragments.includes(this.user)){
+        this.isBtnFragmentDownloadDisable = false;
+        this.isBtnFragmentUploadDisable = true;
+      }
+      else {
+        this.isBtnFragmentDownloadDisable = true;
+        this.isBtnFragmentUploadDisable = false;
+      }
+    },
+    async getFiles() {
+      const response = await axios.get(`http://localhost:5000/equipos/encrypted_files/nombres/${this.teamName}`, {
+        headers: {
+          Authorization: `Bearer ${await localforage.getItem('authToken')}`
+        }
+      });
+      this.files = response.data;
     },
     async downloadFragment() {
       const response = await axios.get(`http://localhost:5000/equipos/descargar_fragmentos/${this.teamName}`, {
@@ -153,9 +167,19 @@ export default {
       input.onchange = this.handleFileUpload;
       input.click();
     },
+    selectAnyFile() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.onchange = this.handleAnyFileUpload;
+      input.click();
+    },
     handleFileUpload(event) {
       const file = event.target.files[0];
       this.uploadFile(file);
+    },
+    handleAnyFileUpload(event) {
+      const file = event.target.files[0];
+      this.uploadAnyFile(file);
     },
     async uploadFile(file) {
       const reader = new FileReader();
@@ -178,7 +202,52 @@ export default {
           console.error('Error uploading file:', error);
         }
       };
-    }
+    },
+    async uploadAnyFile(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const response = await axios.post(`http://localhost:5000/equipos/cifrar_documento/${this.teamName}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${await localforage.getItem('authToken')}`
+          }
+        });
+        console.log('File uploaded successfully:', response.data);
+        location.reload();
+      } catch (error) {
+        console.error('Error uploading file:', error);
+      }
+    },
+    async downloadFile() {
+      const filename = this.opcionSeleccionada; // Nombre del archivo seleccionado
+
+      // Hacer la solicitud GET al endpoint de descarga
+      const response = await axios.get(`http://localhost:5000/equipos/descargar_documento/${this.teamName}/luna2.txt}`, {
+        responseType: 'blob', // Importante para archivos binarios
+        headers: {
+          Authorization: `Bearer ${await localforage.getItem('authToken')}`
+        }
+      });
+
+      // Crear una URL para el Blob
+      const url = URL.createObjectURL(response.data);
+
+      // Crear un enlace para la descarga
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+
+      // Agregar el enlace al documento y simular un clic
+      document.body.appendChild(link);
+      link.click();
+
+      // Eliminar el enlace del documento
+      document.body.removeChild(link);
+
+      // Liberar la URL del Blob
+      URL.revokeObjectURL(url);
+    },
   }
 }
 
@@ -201,7 +270,7 @@ export default {
   justify-content: center;
   flex-direction: column;
   gap: 1.5em;
-  padding-top: 2em;
+  padding-top: 2.5em;
 
   @include laptop {
     gap: 3em;
@@ -237,6 +306,24 @@ export default {
   padding-top: 1em;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+  gap: 2em;
+}
+
+.download-keys_buttons_act {
+  padding-top: 1em;
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+}
+
+.hr_css {
+  margin-top: 3em;
+}
+
+.radioCSS {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  justify-content: center;
+  gap: 2em;
 }
 </style>
 

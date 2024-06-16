@@ -2,19 +2,23 @@
   <v-container class="create-key-container">
     <v-form>
       <div class="create-key_text">Equipo: {{ teamName }}</div>
+      <h3>Agregar Usuario</h3>
       <v-text-field v-model="username" label="Usuario a agregar al equipo"></v-text-field>
 
       <v-alert v-show="isAlertVisible" :type="messageAlertType" dismissible>{{ messageAlertText }}</v-alert>
 
       <div class="create-key-container__buttons">
         <v-btn @click="addPersonToTeam" color="primary">Añadir Usuario</v-btn>
-        <v-btn @click="cancel" color="red">Cancelar</v-btn>
       </div>
 
       <hr class="hr_css">
 
+      <h3 class="titulo">Crear Llave Maestra y Fragmentos</h3>
+      <v-text-field v-model="password" label="Contraseña del equipo" type="password"></v-text-field>
+
+      <v-alert v-show="isAlertVisible2" :type="messageAlertType2" dismissible>{{ messageAlertText2 }}</v-alert>
+
       <div class="create-key-container__buttons">
-        <v-text-field v-model="password" label="Contraseña del equipo"></v-text-field>
         <v-btn
           @click="generateFragments"
           :color="generateKeyButtonColor"
@@ -22,10 +26,14 @@
           :disabled="isBtnGenerateDisabled">
           Generar Llave Maestra
         </v-btn>
-        <v-btn @click="redirectToFilesPage" color="primary">Acceder a los Archivos</v-btn>
       </div>
 
-      <v-alert v-show="isAlertVisible2" :type="messageAlertType2" dismissible>{{ messageAlertText2 }}</v-alert>
+      <hr class="hr_css">
+
+      <div class="create-key-container__buttons">
+        <v-btn @click="redirectToFilesPage" color="secondary" :disabled="!hasKey">Acceder a los Archivos</v-btn>
+        <v-btn @click="cancel" color="red">Cancelar</v-btn>
+      </div>
 
     </v-form>
   </v-container>
@@ -51,6 +59,7 @@ export default {
       isAlertVisible2: false,
       messageAlertText2: "",
       messageAlertType2: "error",
+      hasKey: false,
     };
   },
   props: ['teamName', 'user'],
@@ -67,6 +76,9 @@ export default {
       }
     },
   },
+  mounted() {
+    this.fetchHasKey(); // Llama a la función para obtener hasKey
+  },
   methods: {
     async addPersonToTeam() {
       try {
@@ -75,26 +87,28 @@ export default {
         this.generateKeyButtonColor = 'secondary';
         this.generateKeyCursorStyle = 'pointer';
         this.messageAlertType = "success";
-        this.messageAlertText = responseAddPerson.data.message;
+        this.messageAlertText = this.username + " | " + responseAddPerson.data.message;
       } catch (error) {
         if (error.response.status === 400) {
           this.messageAlertType = "warning";
-          this.messageAlertText = error.response.data.error;
+          this.messageAlertText = this.username + " | " + error.response.data.error;
         } else if (error.response.status === 404 || error.response.status === 403) {
           this.messageAlertType = "error";
-          this.messageAlertText = error.response.data.error;
+          this.messageAlertText = this.username + " | " + error.response.data.error;
         } else {
-          console.log(error.response.status)
+          console.log(error.response.status);
           this.messageAlertType = "error";
           this.messageAlertText = "Ocurrió un error inesperado. Por favor, inténtelo de nuevo.";
         }
       } finally {
         this.isAlertVisible = true;
+        this.username = "";
       }
     },
     async generateFragments() {
       try {
         const responseAddPerson = await this.generateFragmentPost();
+        this.hasKey = true;
         this.isAddUserVisible = true;
         this.generateKeyButtonColor = 'secondary';
         this.generateKeyCursorStyle = 'pointer';
@@ -108,7 +122,7 @@ export default {
           this.messageAlertType2 = "error";
           this.messageAlertText2 = error.response.data.error;
         } else {
-          console.log(error.response.status)
+          console.log(error.response.status);
           this.messageAlertType2 = "error";
           this.messageAlertText2 = "Ocurrió un error inesperado. Por favor, inténtelo de nuevo.";
         }
@@ -135,7 +149,6 @@ export default {
       };
 
       return await axios.post('http://localhost:5000/equipos/agregar', data, config);
-
     },
     async generateFragmentPost() {
       const data = {
@@ -150,17 +163,29 @@ export default {
       };
 
       return await axios.post('http://localhost:5000/equipos/generar_fragmentos', data, config);
-
     },
-  }
-}
+    async fetchHasKey() {
+      try {
+        const response = await axios.get(`http://localhost:5000/equipos/has_key/${this.teamName}`, {
+          headers: {
+            Authorization: `Bearer ${await localforage.getItem('authToken')}`,
+          },
+        });
 
+        this.hasKey = response.data.has_key;
+      } catch (error) {
+        console.error('Error al cargar la información de has_key:', error);
+        this.hasKey = false; // Establece hasKey en false en caso de error
+        this.messageAlertType = "error";
+        this.messageAlertText = error.response.data.error || 'Error al cargar la información de has_key.';
+      }
+    },
+  },
+};
 </script>
-
 
 <style scoped lang="scss">
 @import "@/styles/mixins";
-
 
 .create-key-container {
   @include laptop {
@@ -182,7 +207,7 @@ export default {
   }
 }
 
-.create-key_text{
+.create-key_text {
   text-align: center;
   font-size: 2em;
   padding-bottom: 1em;
@@ -191,5 +216,8 @@ export default {
 .hr_css {
   margin-top: 3em;
 }
-</style>
 
+.titulo {
+  margin-top: 1em;
+}
+</style>
