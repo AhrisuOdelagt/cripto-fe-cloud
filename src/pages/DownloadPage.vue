@@ -223,7 +223,7 @@ export default {
       const filename = this.opcionSeleccionada; // Nombre del archivo seleccionado
 
       // Hacer la solicitud GET al endpoint de descarga
-      const response = await axios.get(`http://localhost:5000/equipos/descargar_documento/${this.teamName}/luna2.txt}`, {
+      const response = await axios.get(`http://localhost:5000/equipos/descargar_documento/${this.teamName}/${filename}`, {
         responseType: 'blob', // Importante para archivos binarios
         headers: {
           Authorization: `Bearer ${await localforage.getItem('authToken')}`
