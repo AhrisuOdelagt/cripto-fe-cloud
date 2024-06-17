@@ -36,7 +36,7 @@
           :disabled="this.fragments.length !== this.members.length">
           Descargar Archivo
         </v-btn>
-        <v-btn @click="selectAnyFile" color="secondary" :disabled="isBtnFragmentDownloadDisable">Subir Archivo</v-btn>
+        <v-btn @click="selectAnyFile" color="secondary" :disabled="this.fragments.length !== this.members.length">Subir Archivo</v-btn>
 
       </div>
 
