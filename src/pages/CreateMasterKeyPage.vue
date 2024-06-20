@@ -44,6 +44,7 @@ import localforage from "localforage";
 import axios from "axios";
 
 export default {
+  
   name: "CreateMasterKeyPage",
   data() {
     return {
