@@ -103,7 +103,7 @@ export default {
       location.reload();
     },
     async getMembers() {
-      const response = await axios.get(`http://localhost:5000/equipos/miembros/${this.teamName}`, {
+      const response = await axios.get(`http://34.46.176.112:5000/equipos/miembros/${this.teamName}`, {
         headers: {
           Authorization: `Bearer ${await localforage.getItem('authToken')}`
         }
@@ -125,7 +125,7 @@ export default {
       }
     },
     async getFiles() {
-      const response = await axios.get(`http://localhost:5000/equipos/encrypted_files/nombres/${this.teamName}`, {
+      const response = await axios.get(`http://34.46.176.112:5000/equipos/encrypted_files/nombres/${this.teamName}`, {
         headers: {
           Authorization: `Bearer ${await localforage.getItem('authToken')}`
         }
@@ -133,7 +133,7 @@ export default {
       this.files = response.data;
     },
     async downloadFragment() {
-      const response = await axios.get(`http://localhost:5000/equipos/descargar_fragmentos/${this.teamName}`, {
+      const response = await axios.get(`http://34.46.176.112:5000/equipos/descargar_fragmentos/${this.teamName}`, {
         responseType: 'blob',
         headers: {
           Authorization: `Bearer ${await localforage.getItem('authToken')}`
@@ -188,7 +188,7 @@ export default {
         const fileContent = reader.result;
         try {
           const response = await axios.post(
-            `http://localhost:5000/equipos/subir_fragmentos/${this.teamName}`,
+            `http://34.46.176.112:5000/equipos/subir_fragmentos/${this.teamName}`,
             { content: fileContent }, // Enviar solo el contenido
             {
               headers: {
@@ -207,7 +207,7 @@ export default {
       const formData = new FormData();
       formData.append('file', file);
       try {
-        const response = await axios.post(`http://localhost:5000/equipos/cifrar_documento/${this.teamName}`, formData, {
+        const response = await axios.post(`http://34.46.176.112:5000/equipos/cifrar_documento/${this.teamName}`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
             Authorization: `Bearer ${await localforage.getItem('authToken')}`
@@ -223,7 +223,7 @@ export default {
       const filename = this.opcionSeleccionada; // Nombre del archivo seleccionado
 
       // Hacer la solicitud GET al endpoint de descarga
-      const response = await axios.get(`http://localhost:5000/equipos/descargar_documento/${this.teamName}/${filename}`, {
+      const response = await axios.get(`http://34.46.176.112:5000/equipos/descargar_documento/${this.teamName}/${filename}`, {
         responseType: 'blob', // Importante para archivos binarios
         headers: {
           Authorization: `Bearer ${await localforage.getItem('authToken')}`

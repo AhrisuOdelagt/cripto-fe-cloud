@@ -54,7 +54,7 @@ export default {
         },
       };
 
-      return await axios.get('http://localhost:5000/equipos/listar', config);
+      return await axios.get('http://34.46.176.112:5000/equipos/listar', config);
     },
   }
 }

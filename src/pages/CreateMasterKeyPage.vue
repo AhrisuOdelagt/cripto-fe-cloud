@@ -148,7 +148,7 @@ export default {
         },
       };
 
-      return await axios.post('http://localhost:5000/equipos/agregar', data, config);
+      return await axios.post('http://34.46.176.112:5000/equipos/agregar', data, config);
     },
     async generateFragmentPost() {
       const data = {
@@ -162,11 +162,11 @@ export default {
         },
       };
 
-      return await axios.post('http://localhost:5000/equipos/generar_fragmentos', data, config);
+      return await axios.post('http://34.46.176.112:5000/equipos/generar_fragmentos', data, config);
     },
     async fetchHasKey() {
       try {
-        const response = await axios.get(`http://localhost:5000/equipos/has_key/${this.teamName}`, {
+        const response = await axios.get(`http://34.46.176.112:5000/equipos/has_key/${this.teamName}`, {
           headers: {
             Authorization: `Bearer ${await localforage.getItem('authToken')}`,
           },

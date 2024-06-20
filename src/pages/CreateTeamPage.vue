@@ -70,7 +70,7 @@ export default {
         },
       };
 
-      return await axios.post('http://localhost:5000/equipos/crear', data, config);
+      return await axios.post('http://34.46.176.112:5000/equipos/crear', data, config);
 
     },
   }

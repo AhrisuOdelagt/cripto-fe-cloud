@@ -63,7 +63,7 @@ export default {
         email: this.email,
         password: this.password
       };
-      return await axios.post('http://localhost:5000/usuarios/registrar', data);
+      return await axios.post('http://34.46.176.112:5000/usuarios/registrar', data);
     },
   }
 };

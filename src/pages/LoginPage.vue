@@ -62,7 +62,7 @@ export default {
         username: this.username,
         password: this.password
       };
-      return await axios.post('http://localhost:5000/usuarios/login', data);
+      return await axios.post('http://34.46.176.112:5000/usuarios/login', data);
     },
   }
 };
